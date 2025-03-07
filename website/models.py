@@ -1,6 +1,7 @@
 from django.db import models
 
 class User(models.Model):
+    user_id = models.AutoField(primary_key=True)  # Auto-increment field
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
     password_hash = models.CharField(max_length=255)
@@ -9,6 +10,7 @@ class User(models.Model):
         return self.username
 
 class NewsArticle(models.Model):
+    article_id = models.AutoField(primary_key=True)  # Auto-increment field
     title = models.CharField(max_length=500)
     description = models.TextField(blank=True, null=True)
     content = models.TextField()
@@ -30,8 +32,8 @@ class Favorite(models.Model):
 
 class Preferences(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
-    categories = models.TextField(blank=True, null=True)  # Comma-separated values
-    sources = models.TextField(blank=True, null=True)     # Comma-separated values
+    categories = models.TextField(blank=True, null=True)  # Use JSON or comma-separated values
+    sources = models.TextField(blank=True, null=True)     # Use JSON or comma-separated values
 
     def __str__(self):
         return f"Preferences for {self.user.username}"

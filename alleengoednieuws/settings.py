@@ -73,26 +73,13 @@ WSGI_APPLICATION = 'alleengoednieuws.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'only_good_news',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': 'localhost',  # Use IP if MySQL is on another server
-        'PORT': '3306',       # Default MySQL port
-        'OPTIONS': {
-            'charset': 'utf8mb4'  # Supports emojis
-        },
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 
 # Password validation
