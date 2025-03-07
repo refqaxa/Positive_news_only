@@ -6,9 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alleen Goed Nieuws</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">  <!-- Verwijs naar het CSS-bestand -->
 </head>
-<body>
+<body class="bg-gray-100">
     <!-- Navbar -->
     <nav class="navbar">
         <div class="navbar-logo">
@@ -24,10 +25,10 @@
     </nav>
 
     <!-- Inhoud van de pagina -->
-    <div class="content">
+    <main class="py-8">
         {% block content %}
         <!-- Hier wordt de inhoud van home.html ingevoegd -->
         {% endblock %}
-    </div>
+    </main>
 </body>
 </html>
