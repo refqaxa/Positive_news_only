@@ -1,17 +1,17 @@
-{% extends 'base.html' %}  <!-- Gebruik de base.html template -->
+{% extends 'base.html' %}
 {% load static %}
 
-{% block content %}  <!-- Begin van de inhoudsblok -->
+{% block content %}
 <div class="news-container">
     {% for article in news_articles %}
         <div class="news-card">
             <h2>{{ article.title }}</h2>
-            {% if article.image %}
-                <img src="{{ article.image }}" alt="{{ article.title }}">
+            {% if article.image_url %}
+                <img src="{{ article.image_url }}" alt="{{ article.title }}">
             {% endif %}
-            <p>{{ article.body|truncatewords:30 }}</p>  <!-- Toon een verkorte versie van de tekst -->
-            <a href="{% url 'article_detail' article.uri %}">Lees meer</a>  <!-- Link naar de detailpagina -->
+            <p>{{ article.description|truncatewords:30 }}</p>
+            <a href="{% url 'article_detail' article.article_id %}">Lees meer</a>
         </div>
     {% endfor %}
 </div>
-{% endblock %}  <!-- Einde van de inhoudsblok -->
+{% endblock %}
