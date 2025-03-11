@@ -3,15 +3,51 @@
 
 {% block content %}
 <div class="news-container">
-    {% for article in news_articles %}
-        <div class="news-card">
-            <h2>{{ article.title }}</h2>
-            {% if article.image_url %}
-                <img src="{{ article.image_url }}" alt="{{ article.title }}">
-            {% endif %}
-            <p>{{ article.description|truncatewords:30 }}</p>
-            <a href="{% url 'article_detail' article.article_id %}">Lees meer</a>
+    {% if message %}
+        <div class="message-container">
+            <p>{{ message }}</p>
         </div>
-    {% endfor %}
+    {% else %}
+        {% for article in news_articles %}
+            <div class="news-card">
+                <h2>{{ article.title }}</h2>
+                {% if article.image_url %}
+                    <img src="{{ article.image_url }}" alt="{{ article.title }}">
+                {% endif %}
+                <p>{{ article.description|truncatewords:30 }}</p>
+                <a href="{% url 'article_detail' article.article_id %}">Lees meer</a>
+            </div>
+        {% endfor %}
+
+        <!-- Pagination Controls -->
+        <div class="pagination absolute inset-x-0 bottom-0 h-16 ...">
+            <span class="step-links">
+                {% if news_articles.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ news_articles.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ news_articles.number }} of {{ news_articles.paginator.num_pages }}.
+                </span>
+
+                {% if news_articles.has_next %}
+                    <a href="?page={{ news_articles.next_page_number }}">next</a>
+                    <a href="?page={{ news_articles.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
+
+<style>
+    .message-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 60vh;
+        font-size: 1.5rem;
+        color: #555;
+    }    
+</style>

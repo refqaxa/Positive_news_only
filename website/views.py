@@ -1,26 +1,28 @@
 from django.shortcuts import render, get_object_or_404
 from django.utils.timezone import now
 from .models import NewsArticle
+from django.core.paginator import Paginator
 from django.http import Http404
 import requests
 from transformers import pipeline
+# from textblob import TextBlob
 import pdb
 
 # superSkibidiAdmin / testAdmin1234@
 
-# Initialize the sentiment analysis pipeline
-sentiment_pipeline = pipeline("sentiment-analysis")
+# Use a multilingual sentiment analysis model
+sentiment_pipeline = pipeline("sentiment-analysis", model="wietsedv/bert-base-dutch-cased")
 
 api_key = 'c0ade59a-d8d6-4ca7-afe3-821182107221'  
 api_url = 'https://eventregistry.org/api/v1/article/getArticles'
 
 def fetch_and_save_articles():
-    # print("Funtion start of fetching srticles") # Debugging
+    print("Funtion start of fetching srticles") # Debugging
     params = {
         'action': 'getArticles',
         # 'keyword': 'goed nieuws',
         'lang': 'nld',  # Taal: Nederlands
-        'articlesCount': 300,
+        'articlesCount': 100,
         'resultType': 'articles',
         'apiKey': api_key,
     }
@@ -42,12 +44,26 @@ def fetch_and_save_articles():
             published_date = article.get('date', '')
 
             # Sentiment analysis using Hugging Face's transformers
-            sentiment_result = sentiment_pipeline(content[:512])  # Limit to 512 tokens for the model
+            text_for_analysis = f"{title}. {description}"  # Combineer titel en beschrijving
+            sentiment_result = sentiment_pipeline(text_for_analysis[:512]) 
             sentiment_label = sentiment_result[0]['label']
-            sentiment_score = sentiment_result[0]['score']
-            # print(f"Sentiment Label: {sentiment_label}, Sentiment Score: {sentiment_score}") # Debug
+            # Labels omzetten naar positief/negatief/neutraal
+            if sentiment_label in ['4 stars', '5 stars']:
+                sentiment_label = 'POSITIVE'
+            elif sentiment_label in ['1 star', '2 stars']:
+                sentiment_label = 'NEGATIVE'
+            else:
+                sentiment_label = 'NEUTRAL'
 
-            if sentiment_label == 'POSITIVE' and sentiment_score > 0.5:  # Only positive sentiment articles with high confidence
+            sentiment_score = sentiment_result[0]['score']
+
+            print(f"Sentiment Label: {sentiment_label}, Sentiment Score: {sentiment_score}") # Debug
+
+            # Opslaan bij positieve artikelen (score > 0.5) of neutrale artikelen (score > 0.6)
+            if (
+                (sentiment_label.capitalize() == 'POSITIVE' and sentiment_score > 0.5) or
+                (sentiment_label.capitalize() == 'NEUTRAL' and sentiment_score > 0.6)
+            ):
                 # Check if article already exists to avoid duplicates
                 if not NewsArticle.objects.filter(url=url).exists():
                     NewsArticle.objects.create(
@@ -62,13 +78,17 @@ def fetch_and_save_articles():
                     )
                     print(f"Saved positive article: {title}")
 
-        # print(news_articles[0])
-
     except requests.exceptions.RequestException as e:
             print(f"Fout bij het ophalen van nieuwsberichten: {e}")  # Debug: print foutmelding
 
 def home(request):
-    articles = NewsArticle.objects.order_by('-published_date')[:30]  # Show latest 30 articles
+    articles_list = NewsArticle.objects.order_by('-published_date')  # Get all articles ordered by date
+    if articles_list .count() == 0:
+        return render(request, 'home.html', {'message': 'Geen nieuwsberichten beschikbaar'})
+    
+    paginator = Paginator(articles_list, 10)  # Show 10 articles per page
+    page_number = request.GET.get('page')  # Get the current page number from the URL
+    articles = paginator.get_page(page_number)  # Get the articles for the current page
     context = {'news_articles': articles}
     return render(request, 'home.html', context)
 
