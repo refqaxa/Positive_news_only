@@ -8,10 +8,8 @@ from transformers import pipeline
 # from textblob import TextBlob
 import pdb
 
-# superSkibidiAdmin / testAdmin1234@
-
 # Use a multilingual sentiment analysis model
-sentiment_pipeline = pipeline("sentiment-analysis", model="wietsedv/bert-base-dutch-cased")
+sentiment_pipeline = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
 
 api_key = 'c0ade59a-d8d6-4ca7-afe3-821182107221'  
 api_url = 'https://eventregistry.org/api/v1/article/getArticles'
@@ -43,27 +41,28 @@ def fetch_and_save_articles():
             source = article.get('source', {}).get('title', '')
             published_date = article.get('date', '')
 
-            # Sentiment analysis using Hugging Face's transformers
-            text_for_analysis = f"{title}. {description}"  # Combineer titel en beschrijving
-            sentiment_result = sentiment_pipeline(text_for_analysis[:512]) 
+             # Combineer titel en beschrijving voor betere analyse
+            text_for_analysis = f"{title}. {description}"
+            sentiment_result = sentiment_pipeline(text_for_analysis[:512])  # Beperk tot 512 tokens
             sentiment_label = sentiment_result[0]['label']
-            # Labels omzetten naar positief/negatief/neutraal
+            sentiment_score = sentiment_result[0]['score']
+
+            # Vertaal sterrenclassificaties naar sentimentlabels
             if sentiment_label in ['4 stars', '5 stars']:
                 sentiment_label = 'POSITIVE'
             elif sentiment_label in ['1 star', '2 stars']:
                 sentiment_label = 'NEGATIVE'
             else:
                 sentiment_label = 'NEUTRAL'
+                
+            print(f"Sentiment Label: {sentiment_label}, Sentiment Score: {sentiment_score}")  # Debug
 
-            sentiment_score = sentiment_result[0]['score']
-
-            print(f"Sentiment Label: {sentiment_label}, Sentiment Score: {sentiment_score}") # Debug
-
-            # Opslaan bij positieve artikelen (score > 0.5) of neutrale artikelen (score > 0.6)
+            # Opslaan bij positieve of neutrale artikelen
             if (
-                (sentiment_label.capitalize() == 'POSITIVE' and sentiment_score > 0.5) or
-                (sentiment_label.capitalize() == 'NEUTRAL' and sentiment_score > 0.6)
+                (sentiment_label == 'POSITIVE' and sentiment_score > 0.4) or
+                (sentiment_label == 'NEUTRAL' and sentiment_score > 0.4)
             ):
+                print("opgeslagen!")
                 # Check if article already exists to avoid duplicates
                 if not NewsArticle.objects.filter(url=url).exists():
                     NewsArticle.objects.create(
