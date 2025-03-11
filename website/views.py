@@ -82,14 +82,65 @@ def fetch_and_save_articles():
             print(f"Fout bij het ophalen van nieuwsberichten: {e}")  # Debug: print foutmelding
 
 def home(request):
-    articles_list = NewsArticle.objects.order_by('-published_date')  # Get all articles ordered by date
-    if articles_list .count() == 0:
-        return render(request, 'home.html', {'message': 'Geen nieuwsberichten beschikbaar'})
+    articles_list = NewsArticle.objects.order_by('-published_date')
+    sources = NewsArticle.objects.values_list('source', flat=True).distinct()  # Unieke bronnen ophalen
     
-    paginator = Paginator(articles_list, 10)  # Show 10 articles per page
-    page_number = request.GET.get('page')  # Get the current page number from the URL
-    articles = paginator.get_page(page_number)  # Get the articles for the current page
-    context = {'news_articles': articles}
+    if articles_list.count() == 0:
+        return render(request, 'home.html', {'message': 'Geen nieuwsberichten beschikbaar'})
+
+    paginator = Paginator(articles_list, 10)
+    page_number = request.GET.get('page')
+    articles = paginator.get_page(page_number)
+
+    context = {
+        'news_articles': articles,
+        'sources': sources
+    }
+    return render(request, 'home.html', context)
+
+# Artikelen ophalen per nieuwsbron
+def source_articles(request, source):
+    articles_list = NewsArticle.objects.filter(source=source).order_by('-published_date')
+    sources = NewsArticle.objects.values_list('source', flat=True).distinct()
+
+    if not articles_list.exists():
+        return render(request, 'home.html', {'message': f'Geen artikelen gevonden voor bron: {source}'})
+
+    paginator = Paginator(articles_list, 10)
+    page_number = request.GET.get('page')
+    articles = paginator.get_page(page_number)
+
+    context = {
+        'news_articles': articles,
+        'sources': sources,
+        'current_source': source
+    }
+    return render(request, 'home.html', context)
+
+# Zoekfunctie voor artikelen op titel
+def search_articles(request):
+    query = request.GET.get('q')
+    static_sources = ['Nieuwsbron 1', 'Nieuwsbron 2', 'Nieuwsbron 3', 'Nieuwsbron 4', 'Nieuwsbron 5']
+    
+    # Als er geen bronnen in de database zijn, gebruik dan de statische bronnen
+    sources = NewsArticle.objects.values_list('source', flat=True).distinct()
+    if not sources:
+        sources = static_sources
+
+    if query:
+        articles_list = NewsArticle.objects.filter(title__icontains=query).order_by('-published_date')
+    else:
+        articles_list = NewsArticle.objects.none()
+
+    paginator = Paginator(articles_list, 10)
+    page_number = request.GET.get('page')
+    articles = paginator.get_page(page_number)
+
+    context = {
+        'news_articles': articles,
+        'sources': sources,
+        'query': query
+    }
     return render(request, 'home.html', context)
 
 # Task: get artikel detail from database with artikel id

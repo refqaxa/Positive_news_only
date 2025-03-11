@@ -7,29 +7,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alleen Goed Nieuws</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">  <!-- Verwijs naar het CSS-bestand -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body class="bg-gray-100">
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="navbar-logo">
-            Logo
-        </div>
-        <div class="navbar-links">
-            {% comment %} we doen niet aan catogrieen omdat het niet in de design zit (het was bron OF catogrie) {% endcomment %}
-            <a href="#">Nieuws bron 1</a>
-            <a href="#">Nieuws bron 2</a>
-            <a href="#">Nieuws bron 3</a>
-            <a href="#">Nieuws bron 4</a>
-            <a href="#">Nieuws bron 5</a>
-        </div>
-    </nav>
 
-    <!-- Inhoud van de pagina -->
-    <main class="py-8">
-        {% block content %}
-        <!-- Hier wordt de inhoud van home.html ingevoegd -->
-        {% endblock %}
-    </main>
+<!-- Navbar -->
+<nav class="navbar bg-dark shadow-md p-4 flex justify-between items-center">
+    <div class="navbar-logo text-xl font-bold">Logo</div>
+    
+    <!-- Dynamisch nieuwsbronnen tonen -->
+    <div class="navbar-links flex space-x-4 text-dark-600 ">
+        {% for source in sources %}
+            <a href="{% url 'source_articles' source=source %}" class="text-dark-500 hover:underline">
+                {{ source }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <!-- Zoekfunctie -->
+    <form method="GET" action="{% url 'search_articles' %}" class="flex px-8">
+        <input 
+            type="text" 
+            name="q" 
+            placeholder="Zoek op titel..." 
+            class="border border-gray-300 rounded-l-lg px-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value="{{ query|default:'' }}"
+        />
+        <button 
+            type="submit" 
+            class="bg-blue-500 text-dark px-4 py-2 rounded-r-lg hover:bg-blue-600 transition"
+        >
+        <span class="material-symbols-outlined">
+            search
+        </span>
+        </button>
+    </form>
+
+</nav>
+
+<!-- Inhoud van de pagina -->
+<main class="py-8">
+    {% block content %}
+    {% endblock %}
+</main>
+
 </body>
 </html>

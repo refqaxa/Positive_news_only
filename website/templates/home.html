@@ -1,45 +1,43 @@
 {% extends 'base.html' %}
-{% load static %}
 
 {% block content %}
-<div class="news-container">
+<div class="news-container container mx-auto px-4">
     {% if message %}
-        <div class="message-container">
-            <p>{{ message }}</p>
-        </div>
-    {% else %}
-        {% for article in news_articles %}
-            <div class="news-card">
-                <h2>{{ article.title }}</h2>
-                {% if article.image_url %}
-                    <img src="{{ article.image_url }}" alt="{{ article.title }}">
-                {% endif %}
-                <p>{{ article.description|truncatewords:30 }}</p>
-                <a href="{% url 'article_detail' article.article_id %}">Lees meer</a>
-            </div>
-        {% endfor %}
-
-        <!-- Pagination Controls -->
-        <div class="pagination absolute inset-x-0 bottom-0 h-16 ...">
-            <span class="step-links">
-                {% if news_articles.has_previous %}
-                    <a href="?page=1">&laquo; first</a>
-                    <a href="?page={{ news_articles.previous_page_number }}">previous</a>
-                {% endif %}
-
-                <span class="current">
-                    Page {{ news_articles.number }} of {{ news_articles.paginator.num_pages }}.
-                </span>
-
-                {% if news_articles.has_next %}
-                    <a href="?page={{ news_articles.next_page_number }}">next</a>
-                    <a href="?page={{ news_articles.paginator.num_pages }}">last &raquo;</a>
-                {% endif %}
-            </span>
+        <div class="message-container bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4">
+            {{ message }}
         </div>
     {% endif %}
+
+    {% for article in news_articles %}
+        <div class="news-card">
+            <h2 class="text-xl font-bold">{{ article.title }}</h2>
+            <p class="text-gray-700">{{ article.description|truncatechars:150 }}</p>
+            <a href="{{ article.url }}" target="_blank" class="text-blue-500 hover:underline">
+                Lees meer →
+            </a>
+            <div class="mt-2 text-sm text-gray-500">
+                {{ article.published_date|date:"d M Y" }} | Bron: {{ article.source }}
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Paginering -->
+    <div class="pagination absolute inset-x-0 bottom-0 h-16 ... mt-6">
+        {% if news_articles.has_previous %}
+            <a href="?page=1" class="text-blue-500 mx-2">Eerste</a>
+            <a href="?page={{ news_articles.previous_page_number }}" class="text-blue-500 mx-2">← Vorige</a>
+        {% endif %}
+
+        <span class="text-gray-700 mx-2">Pagina {{ news_articles.number }} van {{ news_articles.paginator.num_pages }}</span>
+
+        {% if news_articles.has_next %}
+            <a href="?page={{ news_articles.next_page_number }}" class="text-blue-500 mx-2">Volgende →</a>
+            <a href="?page={{ news_articles.paginator.num_pages }}" class="text-blue-500 mx-2">Laatste</a>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
+
 
 <style>
     .message-container {
