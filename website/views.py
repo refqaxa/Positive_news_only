@@ -15,7 +15,7 @@ api_key = 'c0ade59a-d8d6-4ca7-afe3-821182107221'
 api_url = 'https://eventregistry.org/api/v1/article/getArticles'
 
 def fetch_and_save_articles():
-    print("Funtion start of fetching srticles") # Debugging
+    # print("Funtion start of fetching srticles") # Debugging
     params = {
         'action': 'getArticles',
         # 'keyword': 'goed nieuws',
@@ -55,7 +55,7 @@ def fetch_and_save_articles():
             else:
                 sentiment_label = 'NEUTRAL'
                 
-            print(f"Sentiment Label: {sentiment_label}, Sentiment Score: {sentiment_score}")  # Debug
+            # print(f"Sentiment Label: {sentiment_label}, Sentiment Score: {sentiment_score}")  # Debug
 
             # Opslaan bij positieve of neutrale artikelen
             if (
