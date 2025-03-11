@@ -87,7 +87,7 @@ def home(request):
     if articles_list.count() == 0:
         return render(request, 'home.html', {'message': 'Geen nieuwsberichten beschikbaar'})
 
-    paginator = Paginator(articles_list, 10)
+    paginator = Paginator(articles_list, 12)
     page_number = request.GET.get('page')
     articles = paginator.get_page(page_number)
 
@@ -141,6 +141,11 @@ def search_articles(request):
         'query': query
     }
     return render(request, 'home.html', context)
+
+def all_sources(request):
+    sources = NewsArticle.objects.values_list('source', flat=True).distinct()  # Alle unieke bronnen ophalen
+    return render(request, 'all_sources.html', {'sources': sources})
+
 
 # Task: get artikel detail from database with artikel id
 

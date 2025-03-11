@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import source_articles, search_articles
+from .views import source_articles, search_articles, all_sources
 from . import views
 
 urlpatterns = [
@@ -7,4 +7,5 @@ urlpatterns = [
     path('source/<str:source>/', source_articles, name='source_articles'), # Artikels bronnen
     path('search/', search_articles, name='search_articles'), # Zoek artikels
     path('article/<str:article_id>/', views.article_detail, name='article_detail'),  # Detailpagina
+    path('all_sources/', all_sources, name='all_sources'),  # Nieuwe pagina voor alle bronnen
 ]

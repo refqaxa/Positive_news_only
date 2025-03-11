@@ -22,7 +22,7 @@
     {% endfor %}
 
     <!-- Paginering -->
-    <div class="pagination absolute inset-x-0 bottom-0 h-16 ... mt-6">
+    <div class="pagination inset-x-0 bottom-0 h-16 mt-6">
         {% if news_articles.has_previous %}
             <a href="?page=1" class="text-blue-500 mx-2">Eerste</a>
             <a href="?page={{ news_articles.previous_page_number }}" class="text-blue-500 mx-2">← Vorige</a>

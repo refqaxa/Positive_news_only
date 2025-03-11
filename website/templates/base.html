@@ -14,15 +14,22 @@
 
 <!-- Navbar -->
 <nav class="navbar bg-dark shadow-md p-4 flex justify-between items-center">
-    <div class="navbar-logo text-xl font-bold">Logo</div>
+    <div class="navbar-logo text-xl font-bold">
+        <a href="{% url 'home' %}">Logo</a>
+    </div>
+    
     
     <!-- Dynamisch nieuwsbronnen tonen -->
-    <div class="navbar-links flex space-x-4 text-dark-600 ">
-        {% for source in sources %}
+    <div class="navbar-links flex space-x-4 text-dark-600">
+        {% for source in sources|slice:":4" %}  <!-- Toon de eerste 4 bronnen -->
             <a href="{% url 'source_articles' source=source %}" class="text-dark-500 hover:underline">
                 {{ source }}
             </a>
         {% endfor %}
+
+        {% if sources|length > 4 %}  <!-- Als er meer dan 4 bronnen zijn -->
+            <a href="{% url 'all_sources' %}" class="text-dark-500 hover:underline">Alle Bronnen</a>
+        {% endif %}
     </div>
 
     <!-- Zoekfunctie -->
