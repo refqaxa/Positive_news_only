@@ -20,20 +20,24 @@
             </div>
 
             <!-- Voeg aan favorieten sectie -->
-            {% comment %} <form method="post" action="{% url 'toggle_favorite' article.id %}">
-                {% csrf_token %}
-                <button type="submit">
-                    {% if article.favorite_set.filter(user=request.user).exists %}
-                        Remove from favorites
-                    {% else %}
-                        Add to favorites
-                    {% endif %}
-                </button>
-            </form> {% endcomment %}
+            {% if user.is_authenticated %}
+                <form method="post" action="{% url 'toggle_favorite' article.article_id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-blue-500 my-8">
+                        {% if is_favorited %}
+                            Remove from favorites
+                        {% else %}
+                            Add to favorites
+                        {% endif %}
+                    </button>
+                </form>
+            {% else %}
+                <p>Please <a href="{% url 'login' %}" class="bg-blue-500 my-8 hover:underline">log in</a> to add this article to your favorites.</p>
+            {% endif %}
             
             <!-- Content sectie -->
             <div class="text-gray-700 leading-relaxed space-y-6">
-                {{ article.body|linebreaks }}
+                {{ article.content|linebreaks }}
             </div>
 
             <!-- Navigatie -->

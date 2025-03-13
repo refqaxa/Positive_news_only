@@ -79,14 +79,16 @@ def search_articles(request):
 def article_detail(request, article_id):
     # Haal het artikel uit de database
     article = get_object_or_404(NewsArticle, article_id=article_id)
-
+     # Check if the user is authenticated
+    if request.user.is_authenticated:
+        # Check if the article is favorited by the current user
+        is_favorited = Favorite.objects.filter(user=request.user, article=article).exists()
+    else:
+        # If the user is not logged in, we set `is_favorited` to False
+        is_favorited = False
     context = {
-        'article': {
-            'title': article.title,
-            'body': article.content,
-            'image': article.image_url,
-            'created_at': article.published_date,
-        }
+        'article': article,
+        'is_favorited': is_favorited,  # Pass this variable to the template
     }
     return render(request, 'article_detail.html', context)
 
