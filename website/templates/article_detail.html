@@ -19,6 +19,18 @@
                 </time>
             </div>
 
+            <!-- Voeg aan favorieten sectie -->
+            <form method="post" action="{% url 'toggle_favorite' article.id %}">
+                {% csrf_token %}
+                <button type="submit">
+                    {% if article.favorite_set.filter(user=request.user).exists %}
+                        Remove from favorites
+                    {% else %}
+                        Add to favorites
+                    {% endif %}
+                </button>
+            </form>
+            
             <!-- Content sectie -->
             <div class="text-gray-700 leading-relaxed space-y-6">
                 {{ article.body|linebreaks }}

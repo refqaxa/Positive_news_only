@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 import threading
 import schedule
 import time
-from website.views import fetch_and_save_articles
+from website.services import fetch_and_save_articles
 
 class Command(BaseCommand):
     help = 'Fetch positive news articles twice a day'
