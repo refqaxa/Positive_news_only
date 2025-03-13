@@ -1,85 +1,15 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, redirect
 from django.utils.timezone import now
-from .models import NewsArticle
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from .forms import RegisterForm, LoginForm, UpdateProfileForm
+from .models import NewsArticle, User, Favorite
 from django.core.paginator import Paginator
 from django.http import Http404
 import requests
-from transformers import pipeline
-# from textblob import TextBlob
-import pdb
 
-# Use a multilingual sentiment analysis model
-sentiment_pipeline = pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
 
-api_key = 'c0ade59a-d8d6-4ca7-afe3-821182107221'  
-api_url = 'https://eventregistry.org/api/v1/article/getArticles'
-
-def fetch_and_save_articles():
-    # print("Funtion start of fetching srticles") # Debugging
-    params = {
-        'action': 'getArticles',
-        # 'keyword': 'goed nieuws',
-        'lang': 'nld',  # Taal: Nederlands
-        'articlesCount': 100,
-        'resultType': 'articles',
-        'apiKey': api_key,
-    }
-
-    try:
-        response = requests.get(api_url, params=params)
-        response.raise_for_status() # Controleer op HTTP-fouten
-        data = response.json()
-        news_articles = data.get('articles', {}).get('results', [])
-
-        for article in news_articles:
-            # print(article)
-            title = article.get('title', '')
-            description = article.get('body', '')
-            content = article.get('body', '')
-            url = article.get('url', '') 
-            image_url = article.get('image', '')
-            source = article.get('source', {}).get('title', '')
-            published_date = article.get('date', '')
-
-             # Combineer titel en beschrijving voor betere analyse
-            text_for_analysis = f"{title}. {description}"
-            sentiment_result = sentiment_pipeline(text_for_analysis[:512])  # Beperk tot 512 tokens
-            sentiment_label = sentiment_result[0]['label']
-            sentiment_score = sentiment_result[0]['score']
-
-            # Vertaal sterrenclassificaties naar sentimentlabels
-            if sentiment_label in ['4 stars', '5 stars']:
-                sentiment_label = 'POSITIVE'
-            elif sentiment_label in ['1 star', '2 stars']:
-                sentiment_label = 'NEGATIVE'
-            else:
-                sentiment_label = 'NEUTRAL'
-                
-            # print(f"Sentiment Label: {sentiment_label}, Sentiment Score: {sentiment_score}")  # Debug
-
-            # Opslaan bij positieve of neutrale artikelen
-            if (
-                (sentiment_label == 'POSITIVE' and sentiment_score > 0.4) or
-                (sentiment_label == 'NEUTRAL' and sentiment_score > 0.4)
-            ):
-                print("opgeslagen!")
-                # Check if article already exists to avoid duplicates
-                if not NewsArticle.objects.filter(url=url).exists():
-                    NewsArticle.objects.create(
-                        title=title,
-                        description=description,
-                        content=content,
-                        url=url,
-                        image_url=image_url,
-                        source=source,
-                        published_date=published_date,
-                        sentiment_score=sentiment_score
-                    )
-                    print(f"Saved positive article: {title}")
-
-    except requests.exceptions.RequestException as e:
-            print(f"Fout bij het ophalen van nieuwsberichten: {e}")  # Debug: print foutmelding
-
+# Articles views
 def home(request):
     articles_list = NewsArticle.objects.order_by('-published_date')
     sources = NewsArticle.objects.values_list('source', flat=True).distinct()  # Unieke bronnen ophalen
@@ -116,6 +46,10 @@ def source_articles(request, source):
     }
     return render(request, 'home.html', context)
 
+def all_sources(request):
+    sources = NewsArticle.objects.values_list('source', flat=True).distinct()  # Alle unieke bronnen ophalen
+    return render(request, 'all_sources.html', {'sources': sources})
+
 # Zoekfunctie voor artikelen op titel
 def search_articles(request):
     query = request.GET.get('q')
@@ -141,13 +75,6 @@ def search_articles(request):
         'query': query
     }
     return render(request, 'home.html', context)
-
-def all_sources(request):
-    sources = NewsArticle.objects.values_list('source', flat=True).distinct()  # Alle unieke bronnen ophalen
-    return render(request, 'all_sources.html', {'sources': sources})
-
-
-# Task: get artikel detail from database with artikel id
 
 def article_detail(request, article_id):
     api_key = 'c0ade59a-d8d6-4ca7-afe3-821182107221'  # Jouw NewsAPI.ai-sleutel
@@ -176,3 +103,75 @@ def article_detail(request, article_id):
         'article': article,
     }
     return render(request, 'article_detail.html', context)
+
+# User views
+# Register
+def register(request):
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('home')
+    else:
+        form = RegisterForm()
+    return render(request, 'register.html', {'form': form})
+
+# login
+def user_login(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            try:
+                user = User.objects.get(username=username)
+                if user.password_hash == password:  # In production, use hashed passwords!
+                    login(request, user)
+                    return redirect('home')
+                else:
+                    form.add_error(None, 'Invalid username or password')
+            except User.DoesNotExist:
+                form.add_error(None, 'Invalid username or password')
+    else:
+        form = LoginForm()
+    return render(request, 'login.html', {'form': form})
+
+# User profile that requires login
+@login_required
+def user_profile(request):
+    if request.method == 'POST':
+        form = UpdateProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('user_profile')
+    else:
+        form = UpdateProfileForm(instance=request.user)
+    return render(request, 'profile.html', {'form': form})
+
+# Logout
+def user_logout(request):
+    logout(request)
+    return redirect('login')
+
+# User favorite articles, settings and soruces prefrences
+@login_required
+def favorite_articles(request):
+    favorites = Favorite.objects.filter(user=request.user).select_related('article')
+    return render(request, 'favorites.html', {'favorites': favorites})
+
+@login_required
+def toggle_favorite(request, article_id):
+    article = NewsArticle.objects.get(pk=article_id)
+    favorite, created = Favorite.objects.get_or_create(user=request.user, article=article)
+    if not created:
+        favorite.delete()
+    return redirect('home')
+
+@login_required
+def account_settings_view(request):
+    return render(request, 'account_settings.html')
+
+@login_required
+def source_settings_view(request):
+    return render(request, 'source_settings.html')
