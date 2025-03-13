@@ -9,14 +9,15 @@
     {% endif %}
 
     {% for article in news_articles %}
-        <div class="news-card">
-            <h2 class="text-xl font-bold">{{ article.title }}</h2>
-            <p class="text-gray-700">{{ article.description|truncatechars:150 }}</p>
-            <a href="{{ article.url }}" target="_blank" class="text-blue-500 hover:underline">
-                Lees meer →
-            </a>
-            <div class="mt-2 text-sm text-gray-500">
-                {{ article.published_date|date:"d M Y" }} | Bron: {{ article.source }}
+    <div class="news-card">
+        <h2 class="text-xl font-bold">{{ article.title }}</h2>
+        <p class="text-gray-700">{{ article.description|truncatechars:150 }}</p>
+        <!-- Pas deze link aan -->
+        <a href="{% url 'article_detail' article_id=article.article_id %}" class="text-blue-500 hover:underline">
+            Lees meer →
+        </a>
+        <div class="mt-2 text-sm text-gray-500">
+            {{ article.published_date|date:"d M Y" }} | Bron: {{ article.source }}
             </div>
         </div>
     {% endfor %}

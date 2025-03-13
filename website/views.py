@@ -145,29 +145,15 @@ def search_articles(request):
 # Task: get artikel detail from database with artikel id
 
 def article_detail(request, article_id):
-    api_key = 'c0ade59a-d8d6-4ca7-afe3-821182107221'  # Jouw NewsAPI.ai-sleutel
-    url = 'https://eventregistry.org/api/v1/article/getArticles'
-    params = {
-        'action': 'getArticles',
-        'articleUri': article_id,  # Gebruik de article_id om het specifieke artikel op te halen
-        'apiKey': api_key,
-    }
-
-    try:
-        response = requests.get(url, params=params)
-        response.raise_for_status()  # Controleer op HTTP-fouten
-        data = response.json()
-        print(f"API-respons: {data}")  # Debug: print de API-respons
-
-        # Haal het artikel op uit de respons
-        article = data.get('articles', {}).get('results', [])[0]  # Neem het eerste artikel
-        print(f"Artikel: {article}")  # Debug: print het artikel
-
-    except (requests.exceptions.RequestException, IndexError) as e:
-        print(f"Fout bij het ophalen van het artikel: {e}")  # Debug: print foutmelding
-        raise Http404("Artikel niet gevonden")  # Geef een 404-fout als het artikel niet bestaat
+    # Haal het artikel uit de database
+    article = get_object_or_404(NewsArticle, article_id=article_id)
 
     context = {
-        'article': article,
+        'article': {
+            'title': article.title,
+            'body': article.content,
+            'image': article.image_url,
+            'created_at': article.published_date,
+        }
     }
     return render(request, 'article_detail.html', context)
