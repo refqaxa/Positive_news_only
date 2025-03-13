@@ -20,7 +20,7 @@
             </div>
 
             <!-- Voeg aan favorieten sectie -->
-            <form method="post" action="{% url 'toggle_favorite' article.id %}">
+            {% comment %} <form method="post" action="{% url 'toggle_favorite' article.id %}">
                 {% csrf_token %}
                 <button type="submit">
                     {% if article.favorite_set.filter(user=request.user).exists %}
@@ -29,7 +29,7 @@
                         Add to favorites
                     {% endif %}
                 </button>
-            </form>
+            </form> {% endcomment %}
             
             <!-- Content sectie -->
             <div class="text-gray-700 leading-relaxed space-y-6">
