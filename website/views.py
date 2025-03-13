@@ -7,6 +7,8 @@ from .models import NewsArticle, User, Favorite
 from django.core.paginator import Paginator
 from django.http import Http404
 import requests
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib import messages
 
 
 # Articles views
@@ -96,14 +98,14 @@ def article_detail(request, article_id):
 # Register
 def register(request):
     if request.method == 'POST':
-        form = RegisterForm(request.POST)
+        form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect('home')
+            form.save()
+            messages.success(request, 'Account succesvol aangemaakt! Je kunt nu inloggen.')
+            return redirect('login')
     else:
-        form = RegisterForm()
-    return render(request, 'register.html', {'form': form})
+        form = UserCreationForm()
+    return render(request, 'registration/register.html', {'form': form})
 
 # login
 def user_login(request):
