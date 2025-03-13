@@ -1,13 +1,15 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
-class User(models.Model):
-    user_id = models.AutoField(primary_key=True)  # Auto-increment field
-    username = models.CharField(max_length=255, unique=True)
+class User(AbstractUser):
+    user_id = models.AutoField(primary_key=True)
     email = models.EmailField(unique=True)
-    password_hash = models.CharField(max_length=255)
+
+    USERNAME_FIELD = 'email'  # Use email to log in
+    REQUIRED_FIELDS = ['username']  # Username still required for user creation
 
     def __str__(self):
-        return self.username
+        return self.email
 
 class NewsArticle(models.Model):
     article_id = models.AutoField(primary_key=True)  # Auto-increment field
