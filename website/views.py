@@ -145,8 +145,18 @@ def user_logout(request):
 # User favorite articles, settings and soruces prefrences
 @login_required
 def favorite_articles(request):
-    favorites = Favorite.objects.filter(user=request.user).select_related('article')
-    return render(request, 'favorites.html', {'favorites': favorites})
+    if request.user.is_authenticated:
+        # Get all favorites for the logged-in user and include the article related to each favorite
+        favorites = Favorite.objects.filter(user=request.user).select_related('article')
+        print(favorites[0])
+    else:
+        favorites = []
+
+    context = {
+        'favorites': favorites,
+    }
+    return render(request, 'favorites.html', context)
+
 
 @login_required
 def toggle_favorite(request, article_id):
@@ -154,7 +164,7 @@ def toggle_favorite(request, article_id):
     favorite, created = Favorite.objects.get_or_create(user=request.user, article=article)
     if not created:
         favorite.delete()
-    return redirect('home')
+    return redirect('favorites')
 
 @login_required
 def account_settings_view(request):

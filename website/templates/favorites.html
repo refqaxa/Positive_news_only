@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Your Favorite Articles</h2>
+</h1>Your Favorite Articles</h1>
 <ul>
     {% for favorite in favorites %}
         <li>
             <a href="{{ favorite.article.url }}">{{ favorite.article.title }}</a>
-            <form method="post" action="{% url 'toggle_favorite' favorite.article.id %}">
+            <form method="post" action="{% url 'toggle_favorite' favorite.article.article_id %}">
                 {% csrf_token %}
-                <button type="submit">Remove from favorites</button>
+                <button type="submit" class="bg-blue-500 my-3 ms-8">Remove from favorites</button>
             </form>
         </li>
     {% endfor %}
