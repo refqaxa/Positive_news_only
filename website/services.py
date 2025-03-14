@@ -90,10 +90,7 @@ def fetch_and_save_articles():
                 sentiment_label = 'NEUTRAL'
 
             # Opslaan bij positieve of neutrale artikelen met een lagere drempelwaarde
-            if (sentiment_label == 'POSITIVE' and sentiment_score > 0.3
-                # (sentiment_label == 'POSITIVE' and sentiment_score > 0.3) # or  # Verlaagd van 0.4 naar 0.3
-                # (sentiment_label == 'NEUTRAL' and sentiment_score > 0.3)  # Verlaagd van 0.4 naar 0.3
-            ):
+            if sentiment_label == 'POSITIVE' and sentiment_score > 0.3:
                 # Check if article already exists to avoid duplicates
                 if not NewsArticle.objects.filter(Q(url=url) | Q(image_url=image_url)).exists():
                     NewsArticle.objects.create(
