@@ -9,7 +9,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         def start_scheduler():
-            schedule.every(10).seconds.do(fetch_and_save_articles) # test it by setting it to current time
+            # schedule.every(10).seconds.do(fetch_and_save_articles) # test it by setting it to current time
             schedule.every().day.at("09:00").do(fetch_and_save_articles)
             schedule.every().day.at("18:00").do(fetch_and_save_articles)
             print("Scheduler started...")
