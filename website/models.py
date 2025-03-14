@@ -9,6 +9,12 @@ class User(AbstractUser):
         return self.username
 
 class NewsArticle(models.Model):
+    CATEGORY_CHOICES = [
+        ('algemeen', 'Algemeen'),
+        ('sport', 'Sport'),
+        ('economie', 'Economie'),
+    ]
+
     article_id = models.AutoField(primary_key=True)  # Auto-increment field
     title = models.CharField(max_length=500)
     description = models.TextField(blank=True, null=True)
@@ -18,6 +24,7 @@ class NewsArticle(models.Model):
     source = models.CharField(max_length=255, blank=True, null=True)
     published_date = models.DateTimeField()
     sentiment_score = models.FloatField(blank=True, null=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='algemeen')
 
     def __str__(self):
         return self.title

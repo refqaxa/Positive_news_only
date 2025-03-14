@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import RegisterForm, LoginForm, UpdateProfileForm
 from .models import NewsArticle, User, Favorite
 from django.core.paginator import Paginator
-from django.http import Http404
+from django.http import Http404, HttpResponse
 import requests
 from django.contrib import messages
 
@@ -13,7 +13,7 @@ from django.contrib import messages
 # Articles views
 def home(request):
     articles_list = NewsArticle.objects.order_by('-published_date')
-    sources = NewsArticle.objects.values_list('source', flat=True).distinct()  # Unieke bronnen ophalen
+    categories = [{'id': cat[0], 'name': cat[1]} for cat in NewsArticle.CATEGORY_CHOICES]
     
     if articles_list.count() == 0:
         return render(request, 'home.html', {'message': 'Geen nieuwsberichten beschikbaar'})
@@ -24,7 +24,28 @@ def home(request):
 
     context = {
         'news_articles': articles,
-        'sources': sources
+        'categories': categories
+    }
+    return render(request, 'home.html', context)
+
+def category_articles(request, category):
+    articles_list = NewsArticle.objects.filter(category=category).order_by('-published_date')
+    categories = [{'id': cat[0], 'name': cat[1]} for cat in NewsArticle.CATEGORY_CHOICES]
+
+    if not articles_list.exists():
+        return render(request, 'home.html', {
+            'message': f'Geen artikelen gevonden in de categorie: {dict(NewsArticle.CATEGORY_CHOICES).get(category, category)}',
+            'categories': categories
+        })
+
+    paginator = Paginator(articles_list, 12)
+    page_number = request.GET.get('page')
+    articles = paginator.get_page(page_number)
+
+    context = {
+        'news_articles': articles,
+        'categories': categories,
+        'current_category': category
     }
     return render(request, 'home.html', context)
 
@@ -151,12 +172,10 @@ def user_logout(request):
 # User favorite articles, settings and soruces prefrences
 @login_required
 def favorite_articles(request):
+    favorites = []
     if request.user.is_authenticated:
         # Get all favorites for the logged-in user and include the article related to each favorite
         favorites = Favorite.objects.filter(user=request.user).select_related('article')
-        print(favorites[0])
-    else:
-        favorites = []
 
     context = {
         'favorites': favorites,
@@ -166,11 +185,27 @@ def favorite_articles(request):
 
 @login_required
 def toggle_favorite(request, article_id):
-    article = NewsArticle.objects.get(pk=article_id)
+    article = get_object_or_404(NewsArticle, article_id=article_id)
     favorite, created = Favorite.objects.get_or_create(user=request.user, article=article)
+    
     if not created:
         favorite.delete()
-    return redirect('favorites')
+        is_favorited = False
+    else:
+        is_favorited = True
+    
+    if request.headers.get('HX-Request'):
+        return render(request, 'favorite_button.html', {
+            'article': article,
+            'is_favorited': is_favorited
+        })
+    
+    # Check if the request came from the favorites page
+    referer = request.META.get('HTTP_REFERER', '')
+    if 'favorites' in referer:
+        return redirect('favorites')
+    
+    return redirect('article_detail', article_id=article_id)
 
 @login_required
 def account_settings_view(request):

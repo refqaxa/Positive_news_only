@@ -1,0 +1,18 @@
+<form hx-post="{% url 'toggle_favorite' article.article_id %}"
+      hx-swap="outerHTML"
+      hx-target="#favorite-form"
+      id="favorite-form"
+      class="mb-8">
+    {% csrf_token %}
+    <button type="submit" 
+            class="inline-flex items-center px-4 py-2 rounded-md {% if is_favorited %}bg-red-500 hover:bg-red-600{% else %}bg-blue-500 hover:bg-blue-600{% endif %} text-white transition-colors duration-200">
+        <svg class="w-5 h-5 mr-2" fill="{% if is_favorited %}currentColor{% else %}none{% endif %}" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+        </svg>
+        {% if is_favorited %}
+            Verwijder uit favorieten
+        {% else %}
+            Voeg toe aan favorieten
+        {% endif %}
+    </button>
+</form> 

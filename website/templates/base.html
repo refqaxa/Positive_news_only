@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alleen Goed Nieuws</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
@@ -18,17 +19,17 @@
         <a href="{% url 'home' %}">Logo</a>
     </div>
     
-    <!-- Dynamisch nieuwsbronnen tonen -->
+    <!-- Categorieën -->
     <div class="navbar-links flex space-x-4 text-dark-600">
-        {% for source in sources|slice:":4" %}
-            <a href="{% url 'source_articles' source=source %}" class="text-dark-500 hover:underline">
-                {{ source }}
+        <a href="{% url 'home' %}" class="text-dark-500 hover:underline {% if not current_category %}font-bold{% endif %}">
+            Alle Nieuws
+        </a>
+        {% for category in categories %}
+            <a href="{% url 'category_articles' category=category.id %}" 
+               class="text-dark-500 hover:underline {% if current_category == category.id %}font-bold{% endif %}">
+                {{ category.name }}
             </a>
         {% endfor %}
-
-        {% if sources|length > 4 %}
-            <a href="{% url 'all_sources' %}" class="text-dark-500 hover:underline">Alle Bronnen</a>
-        {% endif %}
     </div>
 
     <!-- Zoekfunctie -->
