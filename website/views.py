@@ -7,7 +7,6 @@ from .models import NewsArticle, User, Favorite
 from django.core.paginator import Paginator
 from django.http import Http404
 import requests
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 
 
@@ -98,13 +97,13 @@ def article_detail(request, article_id):
 # Register
 def register(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = RegisterForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, 'Account succesvol aangemaakt! Je kunt nu inloggen.')
             return redirect('login')
     else:
-        form = UserCreationForm()
+        form = RegisterForm()
     return render(request, 'registration/register.html', {'form': form})
 
 # login
@@ -114,15 +113,19 @@ def user_login(request):
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
-            try:
-                user = User.objects.get(username=username)
-                if user.password_hash == password:  # In production, use hashed passwords!
-                    login(request, user)
-                    return redirect('home')
-                else:
-                    form.add_error(None, 'Invalid username or password')
-            except User.DoesNotExist:
-                form.add_error(None, 'Invalid username or password')
+            
+            # Debug print
+            print(f"Attempting to authenticate user: {username}")
+            
+            user = authenticate(request, username=username, password=password)
+            
+            if user is not None:
+                print(f"User authenticated successfully: {user.username}")
+                login(request, user)
+                return redirect('home')
+            else:
+                print(f"Authentication failed for user: {username}")
+                form.add_error(None, 'Je gebruikersnaam en wachtwoord komen niet overeen')
     else:
         form = LoginForm()
     return render(request, 'login.html', {'form': form})
@@ -141,8 +144,9 @@ def user_profile(request):
 
 # Logout
 def user_logout(request):
-    logout(request)
-    return redirect('login')
+    if request.user.is_authenticated:
+        logout(request)
+    return redirect('home')
 
 # User favorite articles, settings and soruces prefrences
 @login_required

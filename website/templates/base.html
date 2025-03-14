@@ -70,10 +70,7 @@
                 <a href="{% url 'favorites' %}" class="block px-4 py-2 hover:bg-gray-100">Favoriete Artikels</a>
                 <a href="{% url 'account_settings' %}" class="block px-4 py-2 hover:bg-gray-100">Account Instellingen</a>
                 <a href="{% url 'source_settings' %}" class="block px-4 py-2 hover:bg-gray-100">Bronnen Instellingen</a>
-                <form method="POST" action="{% url 'logout' %}" class="block">
-                    {% csrf_token %}
-                    <button type="submit" class="block w-full text-left px-4 py-2 hover:bg-gray-100">Uitloggen</button>
-                </form>
+                <a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-gray-100">Uitloggen</a>
             </div>
         {% else %}
             <a href="{% url 'login' %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">

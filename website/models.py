@@ -5,11 +5,8 @@ class User(AbstractUser):
     user_id = models.AutoField(primary_key=True)
     email = models.EmailField(unique=True)
 
-    USERNAME_FIELD = 'email'  # Use email to log in
-    REQUIRED_FIELDS = ['username']  # Username still required for user creation
-
     def __str__(self):
-        return self.email
+        return self.username
 
 class NewsArticle(models.Model):
     article_id = models.AutoField(primary_key=True)  # Auto-increment field
