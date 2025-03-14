@@ -2,6 +2,7 @@ from transformers import pipeline
 from django.http import Http404
 import requests
 from .models import NewsArticle
+from django.db.models import Q
 
 
 # Use a multilingual sentiment analysis model
@@ -52,7 +53,6 @@ def fetch_and_save_articles():
     }
 
     try:
-        print("Making API request...")  # Debug
         response = requests.get(api_url, params=params)
         print(f"API Response status: {response.status_code}")  # Debug
         response.raise_for_status()  # Controleer op HTTP-fouten
@@ -69,15 +69,13 @@ def fetch_and_save_articles():
             source = article.get('source', {}).get('title', '')
             published_date = article.get('date', '')
 
-            print(f"\nProcessing article: {title}")  # Debug
-
             # Bepaal de categorie
             category = determine_category(title, description)
-            print(f"Determined category: {category}")  # Debug
+            # print(f"Determined category: {category}")  # Debug
 
             # Combineer titel en beschrijving voor betere analyse
             text_for_analysis = f"{title}. {description}"
-            print("Performing sentiment analysis...")  # Debug
+            # print("Performing sentiment analysis...")  # Debug
             sentiment_result = sentiment_pipeline(text_for_analysis[:512])  # Beperk tot 512 tokens
             sentiment_label = sentiment_result[0]['label']
             sentiment_score = sentiment_result[0]['score']
@@ -92,12 +90,12 @@ def fetch_and_save_articles():
                 sentiment_label = 'NEUTRAL'
 
             # Opslaan bij positieve of neutrale artikelen met een lagere drempelwaarde
-            if (
-                (sentiment_label == 'POSITIVE' and sentiment_score > 0.3) or  # Verlaagd van 0.4 naar 0.3
-                (sentiment_label == 'NEUTRAL' and sentiment_score > 0.3)  # Verlaagd van 0.4 naar 0.3
+            if (sentiment_label == 'POSITIVE' and sentiment_score > 0.3
+                # (sentiment_label == 'POSITIVE' and sentiment_score > 0.3) # or  # Verlaagd van 0.4 naar 0.3
+                # (sentiment_label == 'NEUTRAL' and sentiment_score > 0.3)  # Verlaagd van 0.4 naar 0.3
             ):
                 # Check if article already exists to avoid duplicates
-                if not NewsArticle.objects.filter(url=url).exists():
+                if not NewsArticle.objects.filter(Q(url=url) | Q(image_url=image_url)).exists():
                     NewsArticle.objects.create(
                         title=title,
                         description=description,
