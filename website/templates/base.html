@@ -24,6 +24,8 @@
         <a href="{% url 'home' %}" class="text-dark-500 hover:underline {% if not current_category %}font-bold{% endif %}">
             Alle Nieuws
         </a>
+        <!-- Bronnen-->
+        <a href="{% url 'all_sources' %}" class="text-blue-500 hover:underline">Nieuws Bronnen</a>
         {% for category in categories %}
             <a href="{% url 'category_articles' category=category.id %}" 
                class="text-dark-500 hover:underline {% if current_category == category.id %}font-bold{% endif %}">
