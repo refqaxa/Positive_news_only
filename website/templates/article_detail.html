@@ -1,60 +1,65 @@
 {% extends 'base.html' %}
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ article.title }}</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        .article-container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-        .article-container h1 {
-            font-size: 2em;
-            margin-bottom: 20px;
-        }
-        .article-container img {
-            max-width: 100%;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .article-container p {
-            font-size: 1.1em;
-            line-height: 1.6;
-            color: #333;
-        }
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            color: #007BFF;
-            text-decoration: none;
-        }
-        .back-link:hover {
-            text-decoration: underline;
-        }
-    </style>
-</head>
-<body>
-    <div class="article-container">
-        <h1>{{ article.title }}</h1>
-        {% if article.image %}
-            <img src="{{ article.image }}" alt="{{ article.title }}">
+{% block content %}
+<div class="max-w-xl mx-auto px-4">
+    <article class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <!-- Hero sectie -->
+        {% if article.image_url %}
+            <div class="w-full aspect-w-16 aspect-h-9">
+                <img src="{{ article.image_url }}" alt="{{ article.title }}" class="object-cover w-full h-64">
+            </div>
         {% endif %}
-        <p>{{ article.body }}</p>
-        <a href="{% url 'home' %}" class="back-link">Terug naar de homepage</a>
-    </div>
-</body>
-</html>
+        
+        <div class="p-8">
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-gray-900 mb-4">{{ article.title }}</h1>
+                <time datetime="{{ article.published_date|date:'Y-m-d' }}" class="text-sm text-gray-600">
+                    {{ article.published_date|date:"d F Y" }}
+                </time>
+            </div>
+
+            <!-- Voeg aan favorieten sectie -->
+            {% if user.is_authenticated %}
+                <form hx-post="{% url 'toggle_favorite' article.article_id %}"
+                      hx-swap="outerHTML"
+                      hx-target="#favorite-form"
+                      id="favorite-form"
+                      class="mb-8">
+                    {% csrf_token %}
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 rounded-md {% if is_favorited %}bg-red-500 hover:bg-red-600{% else %}bg-blue-500 hover:bg-blue-600{% endif %} text-white transition-colors duration-200">
+                        <svg class="w-5 h-5 mr-2" fill="{% if is_favorited %}currentColor{% else %}none{% endif %}" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                        {% if is_favorited %}
+                            Verwijder uit favorieten
+                        {% else %}
+                            Voeg toe aan favorieten
+                        {% endif %}
+                    </button>
+                </form>
+            {% else %}
+                <p class="mb-8">
+                    <a href="{% url 'login' %}" class="text-blue-500 hover:underline">Log in</a> om dit artikel aan je favorieten toe te voegen.
+                </p>
+            {% endif %}
+            
+            <!-- Content sectie -->
+            <div class="text-gray-700 leading-relaxed space-y-6">
+                {{ article.content|linebreaks }}
+            </div>
+
+            <!-- Navigatie -->
+            <div class="mt-12 pt-8 border-t border-gray-200">
+                <a href="{% url 'home' %}" class="inline-flex items-center text-blue-600 hover:text-blue-800">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Terug naar de homepage
+                </a>
+            </div>
+        </div>
+    </article>
+</div>
+{% endblock %}

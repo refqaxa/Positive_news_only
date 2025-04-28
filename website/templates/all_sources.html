@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4">
+    <h1 class="text-2xl font-bold mb-4">Alle Bronnen</h1>
+    <ul>
+        {% for source in sources %}
+            <li class="mb-2">
+                <a href="{% url 'source_articles' source=source %}" class="text-blue-500 hover:underline">{{ source }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

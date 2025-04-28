@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="news-container container mx-auto px-4">
+    <h1 class="text-2xl font-bold mb-6">Mijn Favoriete Artikelen</h1>
+    
+    {% for favorite in favorites %}
+        <div class="news-card bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+            <!-- Afbeelding -->
+            {% if favorite.article.image_url %}
+                <img src="{{ favorite.article.image_url }}" alt="{{ favorite.article.title }}" class="w-full h-48 object-cover">
+            {% else %}
+                <div class="bg-gray-200 w-full h-48 flex items-center justify-center text-gray-500">
+                    Geen afbeelding beschikbaar
+                </div>
+            {% endif %}
+
+            <!-- Artikelinhoud -->
+            <div class="p-6">
+                <h2 class="text-xl font-bold mb-2">{{ favorite.article.title }}</h2>
+                <p class="text-gray-700 mb-4">{{ favorite.article.description|truncatechars:150 }}</p>
+                
+                <div class="flex justify-between items-center">
+                    <a href="{% url 'article_detail' article_id=favorite.article.article_id %}" class="text-blue-500 hover:underline">
+                        Lees meer →
+                    </a>
+                    
+                    <form method="post" action="{% url 'toggle_favorite' favorite.article.article_id %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="inline-flex items-center px-4 py-2 rounded-md bg-red-500 hover:bg-red-600 text-white transition-colors duration-200">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                            Verwijder uit favorieten
+                        </button>
+                    </form>
+                </div>
+
+                <div class="mt-4 text-sm text-gray-500">
+                    {{ favorite.article.published_date|date:"d M Y" }} | Bron: {{ favorite.article.source }}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            <h2 class="text-xl font-semibold text-gray-800 mb-2">Geen favoriete artikelen</h2>
+            <p class="text-gray-600 mb-6">Je hebt nog geen artikelen aan je favorieten toegevoegd.</p>
+            <a href="{% url 'home' %}" class="inline-flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors duration-200">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Ga naar de homepage
+            </a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

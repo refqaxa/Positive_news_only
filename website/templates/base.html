@@ -6,28 +6,105 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Alleen Goed Nieuws</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">  <!-- Verwijs naar het CSS-bestand -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=search" />
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="navbar-logo">
-            Logo
-        </div>
-        <div class="navbar-links">
-            <a href="#">Categorie</a>
-            <a href="#">Categorie</a>
-            <a href="#">Categorie</a>
-            <a href="#">Categorie</a>
-            <a href="#">NEWS</a>
-        </div>
-    </nav>
+<body class="bg-gray-100">
 
-    <!-- Inhoud van de pagina -->
-    <div class="content">
-        {% block content %}
-        <!-- Hier wordt de inhoud van home.html ingevoegd -->
-        {% endblock %}
+<!-- Navbar -->
+<nav class="navbar bg-dark shadow-md p-4 flex justify-between items-center">
+    <div class="navbar-logo text-xl font-bold">
+        <a href="{% url 'home' %}">Logo</a>
     </div>
+    
+    <!-- Categorieën -->
+    <div class="navbar-links flex space-x-4 text-dark-600">
+        <a href="{% url 'home' %}" class="text-dark-500 hover:underline {% if not current_category %}font-bold{% endif %}">
+            Alle Nieuws
+        </a>
+        <!-- Bronnen-->
+        <a href="{% url 'all_sources' %}" class="text-blue-500 hover:underline">Nieuws Bronnen</a>
+        {% for category in categories %}
+            <a href="{% url 'category_articles' category=category.id %}" 
+               class="text-dark-500 hover:underline {% if current_category == category.id %}font-bold{% endif %}">
+                {{ category.name }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <!-- Zoekfunctie -->
+    <form method="GET" action="{% url 'search_articles' %}" class="flex px-8">
+        <input 
+            type="text" 
+            name="q" 
+            placeholder="Zoek op titel..." 
+            class="border border-gray-300 rounded-l-lg px-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            value="{{ query|default:'' }}"
+        />
+        <button 
+            type="submit" 
+            class="bg-blue-500 text-dark px-4 py-2 rounded-r-lg hover:bg-blue-600 transition"
+        >
+            <span class="material-symbols-outlined">search</span>
+        </button>
+    </form>
+
+    <!-- Gebruiker login / dropdown -->
+    <div class="relative">
+        {% if request.user.is_authenticated %}
+            <div class="flex items-center space-x-2">
+                <span class="text-dark-500">Welkom, {{ request.user.username }}</span>
+                <button 
+                    id="user-menu-button" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+                    onclick="toggleDropdown()"
+                >
+                    ▼
+                </button>
+            </div>
+
+            <!-- Dropdown-menu -->
+            <div 
+                id="user-menu" 
+                class="hidden absolute right-0 mt-2 w-48 bg-dark border rounded-lg shadow-lg z-50 text-blue-600 dark:text-sky-400"
+            >
+                <a href="{% url 'favorites' %}" class="block px-4 py-2 hover:bg-gray-100">Favoriete Artikels</a>
+                <a href="{% url 'account_settings' %}" class="block px-4 py-2 hover:bg-gray-100">Account Instellingen</a>
+                <a href="{% url 'source_settings' %}" class="block px-4 py-2 hover:bg-gray-100">Bronnen Instellingen</a>
+                <a href="{% url 'logout' %}" class="block px-4 py-2 hover:bg-gray-100">Uitloggen</a>
+            </div>
+        {% else %}
+            <a href="{% url 'login' %}" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">
+                Inloggen
+            </a>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- Inhoud van de pagina -->
+<main class="py-8">
+    {% block content %}
+    {% endblock %}
+</main>
+
+<!-- Script voor dropdown -->
+<script>
+    function toggleDropdown() {
+        const dropdown = document.getElementById('user-menu');
+        dropdown.classList.toggle('hidden');
+    }
+
+    // Klik buiten dropdown sluiten
+    window.addEventListener('click', function(event) {
+        const dropdown = document.getElementById('user-menu');
+        const button = document.getElementById('user-menu-button');
+        if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+</script>
+
 </body>
 </html>
